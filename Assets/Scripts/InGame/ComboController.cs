@@ -6,7 +6,6 @@ public class ComboController : MonoBehaviour {
 	// Constant vars
 	private RectTransform _bar;			// Reference to the bar game object
 	private GameController _gc;			// Reference to the game controller
-	// UI
 	private const float LERP_THRESHOLD = 1f;			// Threshold for lerp animation
 	private Text _multText;				// Reference to UI text for multiplier
 
@@ -28,7 +27,6 @@ public class ComboController : MonoBehaviour {
 			_bar.sizeDelta = new Vector2(width, _bar.sizeDelta.y);
 		}else 
 		if(_currIndex == 3) {
-			_gc.ComboBonus(_currMultiplier);
 			UpdateMultiplier();
 		}
 	}
@@ -37,9 +35,10 @@ public class ComboController : MonoBehaviour {
 /// Public methods --------------------------------------------------------------------------------
 
 	// Move bar to next index
-	public void AddIndex() {
+	public int AddIndex() {
 		_currIndex++;
 		_lerpTo = _indexWidth * _currIndex;
+		return _currIndex;
 	}
 
 	// Reset bar
@@ -53,9 +52,9 @@ public class ComboController : MonoBehaviour {
 	// Initialize game variables
 	private void InitVars() {
 		_gc = GameObject.Find("GameController").GetComponent<GameController>();
-		_bar = gameObject.transform.Find("Bar").gameObject.GetComponent<RectTransform>();
+		_bar = gameObject.transform.Find("ComboBar").gameObject.GetComponent<RectTransform>();
 		_multText = gameObject.transform.Find("Num").Find("Combo").gameObject.GetComponent<Text>();
-		_indexWidth = 400;
+		_indexWidth = 290;
 		_currIndex = 0;
 		_lerpTo = _indexWidth * _currIndex;
 		_currMultiplier = 1;

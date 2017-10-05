@@ -19,6 +19,7 @@ public class Token : MonoBehaviour {
 
 
 	// On instantiation
+	// Start instead of Awake since InputController post processes info that needs to happen before Init is called
 	void Start() {
 		InitVars();
 	}
@@ -46,7 +47,7 @@ public class Token : MonoBehaviour {
 	public void AddInput() {
 		if(_gc.IsInPattern(_index)) {
 			if(!_selected) {
-				VibrationManager.Vibrate(5);
+				VibrationManager.Vibrate(15);
 				UpdateInput();
 				ClickUI();
 			}

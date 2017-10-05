@@ -74,16 +74,12 @@ public class InputController : MonoBehaviour {
 		int difficulty = _gc.Multiplier();
 		// Create and assign board
 		switch(difficulty) {
-			case 1: case 2: case 3:
+			case 1: case 2: case 3: case 4: case 5:
 				CreateSquare(3, difficulty, reset);
 				break;
-			case 4: case 5: case 6:
-			difficulty -= 3;
+			case 6: case 7: case 8: case 9: case 10:
+			difficulty -= 5;
 				CreateSquare(4, difficulty, reset);
-				break;
-			case 7: case 8: case 9:
-			difficulty -= 6;
-				CreateSquare(5, difficulty, reset);
 				break;
 			default:
 				CreateSquare(10);
@@ -110,7 +106,7 @@ public class InputController : MonoBehaviour {
 
 		// Determine how many tokens to light up and which ones
 		List<int> pattern = new List<int>();
-		int numToPick = numTokens / 2 + 1;
+		int numToPick = 5;
 		while(pattern.Count < numToPick) {
 			int index = Mathf.FloorToInt(Random.value * (numTokens - 0.001f));
 			while(pattern.Contains(index)) {
@@ -172,40 +168,48 @@ public class InputController : MonoBehaviour {
 			return;
 		}
 
-		// Chance to rotate pattern on 2nd difficulty
-		if(difficulty >= 2) {
-			float randPattern = Random.value;
-			int rotPattern = 0;
-
-			// Determine if pattern rotates and how much
-			if(randPattern >= 0.9f) {	// Rotate by 180 degrees
-				rotPattern = 2;
-			}else 
-			if(randPattern >= 0.6f) {	// Rotate by 90 degrees
-				rotPattern = 1;
-			}
-
-			RotatePattern((Random.value > 0.5f ? 1 : -1) * rotPattern);
+		// Pattern rotation
+		float randPattern = Random.value;
+		int rotPattern = 0;
+		// Difficulty goes from 2 - 5 (since 1 has no pattern rotation) so...
+		// Chance of rotating 180 degrees is 10% -> 25%
+		// Chance of rotating 90 degrees is 30% -> 45%
+		// I.e. total chance of any pattern rotation goes from 40% -> 70% (each difficulty adds 10%)
+		float patternCheck2 = 1f - (0.05f * difficulty);
+		float patternCheck1 = patternCheck2 - 0.2f - (0.05f * difficulty);
+		if(randPattern > patternCheck2) {
+			rotPattern = 2;
+		}else
+		if(randPattern > patternCheck1) {
+			rotPattern = 1; 
 		}
 
-		// Chance to rotate input on 3rd difficulty
-		if(difficulty == 3) {
-			float randInput = Random.value;
-			int rotInput = 0;
+		RotatePattern((Random.value > 0.5f ? 1 : -1) * rotPattern);
 
-			// Determine if input rotates and how much
-			if(randInput >= 0.95f) {	// Rotate by 180 degrees
-				rotInput = 2;
-			}else 
-			if(randInput >= 0.7f) {	// Rotate by 90 degrees
-				rotInput = 1;
-			}
-
-			RotateInput((Random.value > 0.5f ? 1 : -1) * rotInput);
+		// Input rotation
+		if(difficulty == 2) {
+			return;
 		}
+		float randInput = Random.value;
+		int rotInput = 0;
+		// Difficulty goes from 3 - 5 (since 1 & 2 have no input rotation) so...
+		// Chance of rotating 180 degrees is 10% -> 30%
+		// Chance of rotating 90 degrees is 30% -> 40%
+		// I.e. total chance of any input rotation goes from 40% -> 70% (each difficulty adds 10%)
+		float inputCheck2 = 1.2f - (0.1f * difficulty);
+		float inputCheck1 = inputCheck2 - 0.15f - (0.05f * difficulty);
+		if(randInput >= inputCheck2) {
+			rotInput = 2;
+		}else
+		if(randInput >= inputCheck1) {
+			rotInput = 1; 
+		}
+
+		RotateInput((Random.value > 0.5f ? 1 : -1) * rotInput);
 	}
 
 	// Rotates the pattern to a specified multiple of 90
+	// 30% chance to override the rotation and just return to 0 rotation
 	private void RotatePattern(int index) {
 		_prevPatternRot = _patternRot;
 		_patternRot += index * 90;
@@ -215,6 +219,7 @@ public class InputController : MonoBehaviour {
 	}
 
 	// Rotates the input to a specified multiple of 90
+	// 30% chance to override the rotation and just return to 0 rotation
 	private void RotateInput(int index) {
 		_inputRot += index * 90;
 		if(Random.value >= 0.7) {

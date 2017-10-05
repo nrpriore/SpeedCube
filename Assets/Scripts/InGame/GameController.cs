@@ -14,9 +14,11 @@ public class GameController : MonoBehaviour {
 	public static Transform GameCanvas;					// Reference to transform of the Canvas
 	private InputController _ic;		// Reference to the input controller
 	private ComboController _cc;		// Reference to the combo controller
+	private MultiplierController _mc;	// Reference to the multiplier controller
 	private float _maxTime;				// The starting point of the timer
 	private Text _scoreText;			// Reference to the score text
 	private Text _numPatText;			// Reference to the num patterns text
+	private int[] _multScores;			// The scores at which the multipler goes up
 
 	// Dynamic vars
 	private List<int> _inputs;			// List of currently selected inputs
@@ -74,12 +76,6 @@ public class GameController : MonoBehaviour {
 		_cc.ResetIndex();
 	}
 
-	// Called when combo bonus hits
-	public void ComboBonus(int multiplier) {
-		_score += BASE_COMBO_BONUS * multiplier;
-		UpdateScoreUI();
-	}
-
 	// Checks whether given input appears in pattern
 	public bool IsInPattern(int index) {
 		return _pattern.Contains(index);
@@ -92,44 +88,29 @@ public class GameController : MonoBehaviour {
 
 	// Adjusts and returns difficulty marker based on score
 	public int Multiplier() {
-		if(_score >= 80000) {
-			_timeAdded = 5.8f;
-			_difficulty = 9;
-		}else 
-		if(_score >= 65000) {
-			_timeAdded = 5.4f;
-			_difficulty = 8;
-		}else 
-		if(_score >= 55000) {
-			_timeAdded = 5f;
-			_difficulty = 7;
-		}else 
-		if(_score >= 42000) {
-			_timeAdded = 4.3f;
-			_difficulty = 6;
-		}else 
-		if(_score >= 32000) {
-			_timeAdded = 3.9f;
-			_difficulty = 5;
-		}else 
-		if(_score >= 25000) {
-			_timeAdded = 3.5f;
-			_difficulty = 4;
-		}else 
-		if(_score >= 8000) {
-			_timeAdded = 2.8f;
-			_difficulty = 3;
-		}else 
-		if(_score >= 1500) {
-			_timeAdded = 2.4f;
-			_difficulty = 2;
+		_difficulty = 0;
+		for(int index = 0; index < _multScores.Length; index++) {
+			if(_score < _multScores[index]) {
+				_difficulty = index;
+				break;
+			}
 		}
-		else {
-			_timeAdded = 2f;
-			_difficulty = 1;
+		if(_difficulty == 0) {
+			_difficulty = _multScores.Length;
 		}
+		_timeAdded = 1f + (0.2f * _difficulty);
 		return _difficulty;
 	}
+
+	// Returns the relevant multiplier config for current difficulty
+	// The x value is the bottom score of current multiplier
+	// The y value is the top score of current multiplier
+	// The z value is the current score
+	public Vector3 GetMultiplierConfig() {
+		return (_difficulty < _multScores.Length)?
+		new Vector3(_multScores[_difficulty-1], _multScores[_difficulty], _score) :
+		new Vector3(_multScores[_difficulty-2], _multScores[_difficulty-1], _score);
+	} 
 
 	// DEVELOPMENT - RESTARTS GAME
 	public void Restart() {
@@ -143,6 +124,7 @@ public class GameController : MonoBehaviour {
 	private void InitVars() {
 		_ic = GameObject.Find("Input").GetComponent<InputController>();
 		_cc = GameObject.Find("ComboBonus").GetComponent<ComboController>();
+		_mc = GameObject.Find("MultGauge").GetComponent<MultiplierController>();
 		GameCanvas = GameObject.Find("Canvas").transform;
 		_scoreText = GameObject.Find("ScoreText").GetComponent<Text>();
 		_numPatText = GameObject.Find("NumPatterns").GetComponent<Text>();
@@ -153,11 +135,15 @@ public class GameController : MonoBehaviour {
 		_maxTime = 15f;
 		_prevTimer = _timer = _maxTime - 5f;
 		_timeTaken = 0.2f;
+		_multScores = new [] {0,1500,8000,16000,26000,42000,50000,60000,75000,100000}; // Needs 10 length
 
 		// Init stats
 		_score = 0;
 		_numPatterns = 0;
 		_flawlessPattern = true;
+
+		// Init UI
+		_mc.SetMultiplier();
 	}
 
 	// Creates the next pattern upon completion of the previous one
@@ -176,20 +162,30 @@ public class GameController : MonoBehaviour {
 
 	// Update score and stats
 	private void UpdateScore() {
-		_score += _difficulty * (100 - (int)((_prevTimer - _timer) * 10));
+		int scoreToAdd = 0;
+		scoreToAdd += _difficulty * (100 - (int)((_prevTimer - _timer) * 10));
 		_numPatterns++;
 		if(_flawlessPattern) {
-			_cc.AddIndex();
+			if(_cc.AddIndex() == 3) {
+				scoreToAdd += ComboBonus();
+			}
 		}
 		else {
 			_flawlessPattern = true;
 		}
+		_score += scoreToAdd;
 	}
 
 	//Update score and stat UI
 	private void UpdateScoreUI() {
 		_scoreText.text = _score.ToString(); 
 		_numPatText.text = _numPatterns.ToString();
+		_mc.UpdateBar(_score);
+	}
+
+	// Called when combo bonus hits
+	private int ComboBonus() {
+		return BASE_COMBO_BONUS * _difficulty;
 	}
 
 	// Runs when the timer has run out
@@ -197,7 +193,7 @@ public class GameController : MonoBehaviour {
 		
 	}
 
-/// When conditions -------------------------------------------------------------------------------
+/// Private when conditions -------------------------------------------------------------------------------
 
 	// Returns true the frame the inputs match the pattern
 	private bool CorrectPattern() {
