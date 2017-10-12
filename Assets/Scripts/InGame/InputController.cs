@@ -98,7 +98,7 @@ public class InputController : MonoBehaviour {
 	}
 
 	// Creates and assigns the desired pattern
-	private void AssignPattern(int numTokens) {
+	private void AssignPattern(int numTokens, int difficulty) {
 		// Create pattern gameobject
 		_pattern = Instantiate<GameObject>(gameObject, GameController.GameCanvas);
 		_patternRT = _pattern.GetComponent<RectTransform>();
@@ -116,7 +116,7 @@ public class InputController : MonoBehaviour {
 
 		// Determine how many tokens to light up and which ones
 		List<int> pattern = new List<int>();
-		int numToPick = 4;
+		int numToPick = (difficulty < 4)? 3 : 4;
 		while(pattern.Count < numToPick) {
 			int index = Mathf.FloorToInt(Random.value * (numTokens - 0.001f));
 			while(pattern.Contains(index)) {
@@ -167,7 +167,7 @@ public class InputController : MonoBehaviour {
 		else {
 			RotateObjects(difficulty);
 		}
-		AssignPattern(numTokens);
+		AssignPattern(numTokens, difficulty);
 	}
 
 	// Determines if objects should rotate and picks how much

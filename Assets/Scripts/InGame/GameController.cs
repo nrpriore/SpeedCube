@@ -9,7 +9,7 @@ public class GameController : MonoBehaviour {
 	public const string BASE_HEX 	= "C4EAF2FF";		// Base hex color of input tokens
 	public const string CLICK_HEX 	= "FDFF4BFF";		// Hex color of tokens when selected
 	public const string DISABLE_HEX = "C8C8C880";		// Hex color of tokens when disabled
-	private const int BASE_COMBO_BONUS	= 200;			// Combo bonus points at x1 mult
+	private const int BASE_COMBO_BONUS	= 100;			// Combo bonus points at x1 mult
 	public const int MAX_COMBO_MULT 	= 10;			// Max combo multipler
 	public static Transform GameCanvas;					// Reference to transform of the Canvas
 	private InputController _ic;		// Reference to the input controller
@@ -107,7 +107,7 @@ public class GameController : MonoBehaviour {
 		if(_difficulty == 0) {
 			_difficulty = _multScores.Length;
 		}
-		_timeAdded = 1.2f + (0.1f * _difficulty);
+		_timeAdded = 1.2f + (0.05f * _difficulty);
 		return _difficulty;
 	}
 
