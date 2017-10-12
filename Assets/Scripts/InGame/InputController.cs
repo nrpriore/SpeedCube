@@ -46,6 +46,16 @@ public class InputController : MonoBehaviour {
 		SwitchBoard(reset);
 	}
 
+	// Called when the player loses
+	public void DisableTokens() {
+		foreach(Transform token in gameObject.transform) {
+			token.gameObject.GetComponent<Image>().color = Functions.HexToColor(GameController.DISABLE_HEX);
+		}
+		foreach(Transform token in _pattern.transform) {
+			token.gameObject.GetComponent<Image>().color = Functions.HexToColor(GameController.DISABLE_HEX);
+		}
+	}
+
 /// -----------------------------------------------------------------------------------------------
 /// Private methods -------------------------------------------------------------------------------
 
@@ -106,7 +116,7 @@ public class InputController : MonoBehaviour {
 
 		// Determine how many tokens to light up and which ones
 		List<int> pattern = new List<int>();
-		int numToPick = 5;
+		int numToPick = 4;
 		while(pattern.Count < numToPick) {
 			int index = Mathf.FloorToInt(Random.value * (numTokens - 0.001f));
 			while(pattern.Contains(index)) {

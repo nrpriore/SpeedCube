@@ -22,6 +22,17 @@ public static class Functions {
 		return new Color32(r,g,b,a);
 	}
 
+	// Provides an easy way of updating a single piece of a color
+	// Returns Color of object after setting a specific piece of the color
+	public static Color UpdateColor(Color orig, float r = -1f, float g = -1f, float b = -1f, float a = -1f) {
+		byte newR = (byte)(255f * ((r == -1f)? orig.r : r));
+		byte newG = (byte)(255f * ((g == -1f)? orig.g : g));
+		byte newB = (byte)(255f * ((b == -1f)? orig.b : b));
+		byte newA = (byte)(255f * ((a == -1f)? orig.a : a));
+
+		return new Color32(newR,newG,newB,newA);
+	}
+
 	// Checks if to integer lists are equal, ignoring order
 	public static bool ListEquals(List<int> list1, List<int> list2) {
 		if(list1 == null || list2 == null) {

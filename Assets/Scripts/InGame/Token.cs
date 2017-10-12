@@ -35,7 +35,7 @@ public class Token : MonoBehaviour {
 			byte a = 250;
 			_image.color = new Color32(r, g, b, a);
 		}else 
-		if(_image.color.a < 1) {
+		if(_image.color.a < 1 && _gc.InPlay()) {
 			_image.color = Functions.HexToColor(GameController.BASE_HEX);
 		}
 	}
@@ -43,18 +43,20 @@ public class Token : MonoBehaviour {
 /// -----------------------------------------------------------------------------------------------
 /// Public methods --------------------------------------------------------------------------------
 
-	// Adds token to input
+	// Adds token to input when clicked
 	public void AddInput() {
-		if(_gc.IsInPattern(_index)) {
-			if(!_selected) {
-				VibrationManager.Vibrate(15);
-				UpdateInput();
-				ClickUI();
+		if(_gc.InPlay()) {
+			if(_gc.IsInPattern(_index)) {
+				if(!_selected) {
+					VibrationManager.Vibrate(15);
+					UpdateInput();
+					ClickUI();
+				}
 			}
-		}
-		else {
-			VibrationManager.Vibrate(200);
-			IncorrectClick();
+			else {
+				VibrationManager.Vibrate(200);
+				IncorrectClick();
+			}
 		}
 	}
 

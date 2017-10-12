@@ -8,15 +8,15 @@ public class GameController : MonoBehaviour {
 	// Constant vars
 	public const string BASE_HEX 	= "C4EAF2FF";		// Base hex color of input tokens
 	public const string CLICK_HEX 	= "FDFF4BFF";		// Hex color of tokens when selected
-	private const float TIME_ADD 	= 1f;				// Time added when a pattern is correct
+	public const string DISABLE_HEX = "C8C8C880";		// Hex color of tokens when disabled
 	private const int BASE_COMBO_BONUS	= 200;			// Combo bonus points at x1 mult
 	public const int MAX_COMBO_MULT 	= 10;			// Max combo multipler
 	public static Transform GameCanvas;					// Reference to transform of the Canvas
 	private InputController _ic;		// Reference to the input controller
 	private ComboController _cc;		// Reference to the combo controller
 	private MultiplierController _mc;	// Reference to the multiplier controller
+	private ScoreTextController _sc;	// Reference to the score text controller
 	private float _maxTime;				// The starting point of the timer
-	private Text _scoreText;			// Reference to the score text
 	private Text _numPatText;			// Reference to the num patterns text
 	private int[] _multScores;			// The scores at which the multipler goes up
 
@@ -28,6 +28,7 @@ public class GameController : MonoBehaviour {
 	private int _difficulty;			// Reference to current difficulty/multiplier
 	private float _timeAdded;			// The time added upon completion of a pattern
 	private float _timeTaken;			// The time removed when the wrong token is clicked
+	private bool _active;				// Specifies whether the game is active
 
 	// Statistics
 	private int _score;					// Score of current game
@@ -50,8 +51,8 @@ public class GameController : MonoBehaviour {
 			else {
 				_timer -= Time.deltaTime;
 			}
-		}
-		else {
+		}else 
+		if(_active) {
 			Lose();
 		}
 	}
@@ -81,9 +82,17 @@ public class GameController : MonoBehaviour {
 		return _pattern.Contains(index);
 	}
 
+	// Returns int for UI display
+	public int Timer() {
+		return (int)_timer;
+	}
 	// Returns the % of current time/max time for UI display
 	public float TimerPercent() {
 		return _timer/_maxTime;
+	}
+	// Returns whether the game is active
+	public bool InPlay() {
+		return _timer > 0f && _active;
 	}
 
 	// Adjusts and returns difficulty marker based on score
@@ -98,7 +107,7 @@ public class GameController : MonoBehaviour {
 		if(_difficulty == 0) {
 			_difficulty = _multScores.Length;
 		}
-		_timeAdded = 1f + (0.2f * _difficulty);
+		_timeAdded = 1.2f + (0.1f * _difficulty);
 		return _difficulty;
 	}
 
@@ -125,8 +134,8 @@ public class GameController : MonoBehaviour {
 		_ic = GameObject.Find("Input").GetComponent<InputController>();
 		_cc = GameObject.Find("ComboBonus").GetComponent<ComboController>();
 		_mc = GameObject.Find("MultGauge").GetComponent<MultiplierController>();
+		_sc = GameObject.Find("ScoreText").GetComponent<ScoreTextController>();
 		GameCanvas = GameObject.Find("Canvas").transform;
-		_scoreText = GameObject.Find("ScoreText").GetComponent<Text>();
 		_numPatText = GameObject.Find("NumPatterns").GetComponent<Text>();
 		_inputs = new List<int>();
 		_pattern = new List<int>();
@@ -144,6 +153,9 @@ public class GameController : MonoBehaviour {
 
 		// Init UI
 		_mc.SetMultiplier();
+
+		// Start game
+		_active = true;
 	}
 
 	// Creates the next pattern upon completion of the previous one
@@ -153,7 +165,6 @@ public class GameController : MonoBehaviour {
 
 		bool reset = !_flawlessPattern;
 		UpdateScore();
-		UpdateScoreUI();
 
 		_timer = Mathf.Min(_timer + _timeAdded, _maxTime);
 		_prevTimer = _timer;
@@ -162,25 +173,33 @@ public class GameController : MonoBehaviour {
 
 	// Update score and stats
 	private void UpdateScore() {
-		int scoreToAdd = 0;
-		scoreToAdd += _difficulty * (100 - (int)((_prevTimer - _timer) * 10));
+		int patternScore = 0;
+		int comboScore = 0;
+		patternScore = (100 - (int)((_prevTimer - _timer) * 10));
 		_numPatterns++;
 		if(_flawlessPattern) {
-			if(_cc.AddIndex() == 3) {
-				scoreToAdd += ComboBonus();
+			Vector2 comboInfo = _cc.AddIndex();
+			if((int)comboInfo.x == 3) {
+				comboScore = BASE_COMBO_BONUS * (int)comboInfo.y;
 			}
 		}
 		else {
 			_flawlessPattern = true;
 		}
-		_score += scoreToAdd;
-	}
+		// Multiply by _difficulty (score multiplier)
+		patternScore *= _difficulty;
+		comboScore *= _difficulty;
+		int patternBar = _score + patternScore;
+		int comboBar = patternBar + comboScore;
 
-	//Update score and stat UI
-	private void UpdateScoreUI() {
-		_scoreText.text = _score.ToString(); 
+		int scoreToAdd = patternScore + comboScore;
+		_score += scoreToAdd;
+
+
+		// Update UI
 		_numPatText.text = _numPatterns.ToString();
-		_mc.UpdateBar(_score);
+		_sc.UpdateScore(_score, scoreToAdd);
+		_mc.UpdateMultiplier(_score, patternBar, comboBar);
 	}
 
 	// Called when combo bonus hits
@@ -190,7 +209,8 @@ public class GameController : MonoBehaviour {
 
 	// Runs when the timer has run out
 	private void Lose() {
-		
+		_active = false;
+		_ic.DisableTokens();
 	}
 
 /// Private when conditions -------------------------------------------------------------------------------
@@ -198,11 +218,6 @@ public class GameController : MonoBehaviour {
 	// Returns true the frame the inputs match the pattern
 	private bool CorrectPattern() {
 		return Functions.ListEquals(_inputs, _pattern);
-	}
-
-	// Returns whether the game is active
-	private bool InPlay() {
-		return _timer > 0;
 	}
 	
 }
