@@ -101,6 +101,7 @@ public class InputController : MonoBehaviour {
 	private void AssignPattern(int numTokens, int difficulty) {
 		// Create pattern gameobject
 		_pattern = Instantiate<GameObject>(gameObject, GameController.GameCanvas);
+		_pattern.transform.SetAsFirstSibling();
 		_patternRT = _pattern.GetComponent<RectTransform>();
 		_pattern.GetComponent<InputController>().enabled = false;
 		foreach(Transform child in _pattern.transform) {

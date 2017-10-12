@@ -5,13 +5,13 @@ public class MultiplierController : MonoBehaviour {
 
 	// Constant vars
 	private float _barYMax;				// Height of Timer bar (max height of handle)
-	private RectTransform _lerpBar; 	// Reference to the lerp bar's recttransform
-	private RectTransform _patternBar;	// Reference to the score bar's recttransform
-	private RectTransform _comboBar;	// Reference to the combo bar's recttransform
+	private Image _lerpBar; 			// Reference to the lerp bar's Image
+	private Image _patternBar;			// Reference to the score bar's Image
+	private Image _comboBar;			// Reference to the combo bar's Image
 	private RectTransform _comboText;	// Reference to the combo bar's text recttransform
 	private Text _multText;				// Reference to the text showing the multiplier
 	private GameController _gc;			// Reference to the game controller
-	private const float LERP_THRESHOLD = 1f;			// Threshold for lerp animation
+	private const float LERP_THRESHOLD = .0001f;			// Threshold for lerp animation
 
 	// Dynamic vars
 	private float _lerpRatio;			// % of bar height from bot to top
@@ -25,10 +25,8 @@ public class MultiplierController : MonoBehaviour {
 	
 	// Runs every frame
 	void Update() {
-		float lerpVal = _lerpRatio * _barYMax;
-		if(Mathf.Abs(_lerpBar.sizeDelta.y - lerpVal) > LERP_THRESHOLD) {
-			Vector2 lerpVector = new Vector2(_lerpBar.sizeDelta.x, lerpVal);
-			_lerpBar.sizeDelta = Vector2.Lerp(_lerpBar.sizeDelta, lerpVector, Time.deltaTime * 5f);
+		if(Mathf.Abs(_lerpBar.fillAmount - _lerpRatio) > LERP_THRESHOLD) {
+			_lerpBar.fillAmount = Mathf.Lerp(_lerpBar.fillAmount, _lerpRatio, Time.deltaTime * 5f);
 		}else
 		if(_lerpRatio >= 1f) {
 			NextMultiplier();
@@ -55,10 +53,10 @@ public class MultiplierController : MonoBehaviour {
 	// Initialize game variables
 	private void InitVars() {
 		_gc = GameObject.Find("GameController").GetComponent<GameController>();
-		_lerpBar = gameObject.transform.Find("LerpBar").gameObject.GetComponent<RectTransform>();
-		_patternBar = gameObject.transform.Find("PatternBar").gameObject.GetComponent<RectTransform>();
-		_comboBar = gameObject.transform.Find("ComboBar").gameObject.GetComponent<RectTransform>();
-		_comboText = _comboBar.Find("Text").gameObject.GetComponent<RectTransform>();
+		_lerpBar = gameObject.transform.Find("LerpBar").gameObject.GetComponent<Image>();
+		_patternBar = gameObject.transform.Find("PatternBar").gameObject.GetComponent<Image>();
+		_comboBar = gameObject.transform.Find("ComboBar").gameObject.GetComponent<Image>();
+		_comboText = _comboBar.gameObject.transform.Find("Text").gameObject.GetComponent<RectTransform>();
 		_multText = gameObject.transform.Find("Multiplier").gameObject.GetComponent<Text>();
 		_barYMax = 2000f;
 	}
@@ -86,12 +84,12 @@ public class MultiplierController : MonoBehaviour {
 		float patternRatio = (patternbar >= _topScore)? 1f : (float)(patternbar - _botScore) / (float)(_topScore - _botScore);
 		float comboRatio = (combobar >= _topScore)? 1f : (float)(combobar - _botScore) / (float)(_topScore - _botScore);
 
-		float patternY = patternRatio * _barYMax;
 		float comboY = comboRatio * _barYMax;
 
-		_patternBar.sizeDelta 	= new Vector2(_patternBar.sizeDelta.x, patternY);
-		_comboBar.sizeDelta 	= new Vector2(_comboBar.sizeDelta.x, comboY);
-		_comboText.sizeDelta 	= new Vector2(comboY - 20, 100);
+		_patternBar.fillAmount 	= patternRatio;
+		_comboBar.fillAmount 	= comboRatio;
+		_comboText.sizeDelta 	= new Vector2((comboY - 50 > 50)? (comboY - 50) : -50, 180);
+		_comboText.localPosition = new Vector3(-6, comboY - 30,0);
 	}
 
 }
