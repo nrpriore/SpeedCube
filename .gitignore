@@ -1,0 +1,50 @@
+# =============== #
+# Unity generated #
+# =============== #
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ibrary/
+/[Ll]ogs/
+/Assets/AssetStoreTools*
+sysinfo.txt
+*.stackdump
+*.apk
+*.unitypackage
+ 
+# ===================================== #
+# Visual Studio / MonoDevelop / Sublime generated #
+# ===================================== #
+[Ee]xported[Oo]bj/
+.vs/
+*.userprefs
+*.csproj
+Assembly-CSharp.csproj
+*.sublime-project
+*.sublime-workspace
+*.sln
+*.pidb
+*.suo
+*.sln
+*.svd
+*.tmp
+*.user
+*.unityproj
+*.booproj
+*.pidb.meta
+*.vscode/
+*.code-workspace
+/Assets/Plugins.meta
+/Assets/StreamingAssets.meta
+ 
+# ============ #
+# OS generated #
+# ============ #
+.DS_Store*
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+[Tt]humbs.db
