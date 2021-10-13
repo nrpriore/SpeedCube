@@ -63,9 +63,9 @@ public class InputController : MonoBehaviour {
 	private void InitVars() {
 		_gc = GameObject.Find("GameController").GetComponent<GameController>();
 		_width = gameObject.GetComponent<RectTransform>().sizeDelta.x;
-		_token = Resources.Load<GameObject>("InGame/Square/Main");
-		_tokenTL = Resources.Load<GameObject>("InGame/Square/TopLeft");
-		_tokenTR = Resources.Load<GameObject>("InGame/Square/TopRight");
+		_token = Resources.Load<GameObject>("Prefabs/Input/Main");
+		_tokenTL = Resources.Load<GameObject>("Prefabs/Input/TopLeft");
+		_tokenTR = Resources.Load<GameObject>("Prefabs/Input/TopRight");
 		_inputRT = gameObject.GetComponent<RectTransform>();
 
 		_patternRot = _prevPatternRot = 0;

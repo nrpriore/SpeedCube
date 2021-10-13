@@ -1,14 +1,21 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // Entry point of the application - Initializes app and settings
 public class MainController : MonoBehaviour {
 
 	public NavController NavController;
+	public ScaleController ScaleController;
 
 	// Entry point of the application
 	void Awake() {
 		SetQualitySettings();
 		InitializeControllers();
+	}
+
+	// DEV
+	public void StartGame() {
+		SceneManager.LoadScene("Game");
 	}
 
 
@@ -21,5 +28,6 @@ public class MainController : MonoBehaviour {
 	// Initializes relevant Controller classes
 	private void InitializeControllers() {
 		NavController.Initialize();
+		ScaleController.SetMainMenuUI();
 	}
 }

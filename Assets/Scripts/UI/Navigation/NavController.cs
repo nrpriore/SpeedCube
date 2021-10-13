@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 // Handles tab and screen navigation
 public class NavController : MonoBehaviour {
@@ -10,6 +11,7 @@ public class NavController : MonoBehaviour {
 
 	public RectTransform TabScreensParentRT;	// Reference to parent TabScreen transform set in Unity Inspector
 	public RectTransform TabsParentRT;			// Reference to parent Tab transform set in Unity Inspector
+	public CanvasScaler MainCanvas;				// Reference to Canvas since Screen.width will break resolution scaling
 
 	private int _numTabs;						// Number of tabs
 	private List<LerpController> _tabs;			// Built List of tab LerpControllers
@@ -103,8 +105,8 @@ public class NavController : MonoBehaviour {
 			else {
 				targetX = index * _unselectedTabWidth + _selectedTabWidth + (i - index - 0.5f) * _unselectedTabWidth;  
 			}
-			targetX -= Screen.width / 2f;
-			Vector3 targetPos = new Vector3(targetX, 0, 0);
+			targetX -= MainCanvas.referenceResolution.x / 2f;
+			Vector3 targetPos = new Vector3(targetX, _tabs[i].rectTransform.anchoredPosition.y, 0);
 
 			if(init) {
 				_tabs[i].SetSize(targetSize);
@@ -115,7 +117,7 @@ public class NavController : MonoBehaviour {
 				_tabs[i].SetTargetPosition(targetPos);
 			}
 			
-			targetPos = new Vector3((i - index) * Screen.width, 0, 0);
+			targetPos = new Vector3((i - index) * MainCanvas.referenceResolution.x, _tabScreens[i].rectTransform.anchoredPosition.y, 0);
 			if(init) {
 				_tabScreens[i].SetPosition(targetPos);
 			}
