@@ -747,7 +747,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 156706526}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 235399461}
+        m_TargetAssemblyTypeName: MainController, Assembly-CSharp
+        m_MethodName: StartGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &156706526
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2954,8 +2966,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 884259461}
   m_HandleRect: {fileID: 884259460}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 0.1935
+  m_Value: 0.010915707
+  m_Size: 0.1755
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

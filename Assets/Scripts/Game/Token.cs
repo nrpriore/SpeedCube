@@ -48,14 +48,14 @@ public class Token : MonoBehaviour {
 		if(_gc.InPlay()) {
 			if(_gc.IsInPattern(_index)) {
 				if(!_selected) {
-					VibrationManager.Vibrate(new long[] {0,3,1,3}, -1);
+					//VibrationManager.Vibrate(new long[] {0,3,1,3}, -1);
 					//VibrationManager.Vibrate(10);
 					UpdateInput();
 					ClickUI();
 				}
 			}
 			else {
-				VibrationManager.Vibrate(200);
+				//VibrationManager.Vibrate(200);
 				IncorrectClick();
 			}
 		}
