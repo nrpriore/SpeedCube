@@ -27,7 +27,7 @@ public class MainController : MonoBehaviour {
 
 	// Initializes relevant Controller classes
 	private void InitializeControllers() {
-		NavController.Initialize();
 		ScaleController.SetMainMenuUI();
+		NavController.Initialize();
 	}
 }

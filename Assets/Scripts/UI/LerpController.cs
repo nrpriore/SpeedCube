@@ -43,7 +43,9 @@ public class LerpController : MonoBehaviour {
 		_targetPos = _rt.anchoredPosition;
 		_targetSize = _rt.sizeDelta;
 		_targetScale = _rt.localScale;
-		_targetAplha = _image.color.a;
+		if(_image != null) {
+			_targetAplha = _image.color.a;
+		}
 	}
 
 	public LerpController Init(float speed = DEFAULT_SPEED) {

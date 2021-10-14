@@ -11,7 +11,8 @@ public class NavController : MonoBehaviour {
 
 	public RectTransform TabScreensParentRT;	// Reference to parent TabScreen transform set in Unity Inspector
 	public RectTransform TabsParentRT;			// Reference to parent Tab transform set in Unity Inspector
-	public CanvasScaler MainCanvas;				// Reference to Canvas since Screen.width will break resolution scaling
+	public CanvasScaler Canvas;					// Reference to Canvas since Screen.width will break resolution scaling
+	public RectTransform LevelScreen;			// Reference to Tier ScrollRect for custom listeners
 
 	private int _numTabs;						// Number of tabs
 	private List<LerpController> _tabs;			// Built List of tab LerpControllers
@@ -22,6 +23,13 @@ public class NavController : MonoBehaviour {
 	private float _unselectedTabWidth;	// Width of unselected tab
 	private float _defaultTabHeight;	// Height of unselected tab
 	private float _selectedTabHeight;	// Height of selected tab
+
+	private int _numTiers;						// Number of Tiers
+	private int _selectedTierIndex = -1;		// The currently selected tier index
+	private float _tierMaxY;					// Highest value of y for the tier scroll content
+	private float _tierMinY;					// Lowerst value of y for the tier scroll content
+	private LerpController _tierLerp;			// LerpController for the scroll content
+	private RectTransform _scrollContent;		// Reference to the tier scroll content RectTransform
 
 
 	// Public Methods -------------------------------------------------------------------------- //
@@ -49,9 +57,19 @@ public class NavController : MonoBehaviour {
 		_unselectedTabWidth = _tabs[0].rectTransform.sizeDelta.x - ((_selectedTabWidth - _tabs[0].rectTransform.sizeDelta.x) / (_numTabs - 1));
 		_defaultTabHeight = _tabs[0].rectTransform.sizeDelta.y;
 		_selectedTabHeight = _defaultTabHeight * TAB_MULT_HEIGHT;
-
 		SetTab(1, true);
+
+		RectTransform scrollMask = LevelScreen.Find("Viewport").Find("Mask").GetComponent<RectTransform>();
+		scrollMask.gameObject.AddComponent<TierDrag>().Init(this);
+		_scrollContent = scrollMask.Find("Content").GetComponent<RectTransform>();
+		_tierLerp = _scrollContent.gameObject.AddComponent<LerpController>().Init(20);
+		_tierMaxY = -(LevelScreen.ScaledSize(0).y - scrollMask.ScaledSize(0).y) / 2f;
+		_tierMinY = -_scrollContent.ScaledSize(1).y - _tierMaxY + scrollMask.ScaledSize(0).y;
 	}
+
+	// ------------------------------------------------------------------------------- //
+	// ------------------------------------------------------------------------------- //
+	// Horizontal Screen/Tab navigation
 
 	// Called from the Button events in Unity Inspector, set for each Tab
 	public void SelectTab(int index) {
@@ -105,7 +123,7 @@ public class NavController : MonoBehaviour {
 			else {
 				targetX = index * _unselectedTabWidth + _selectedTabWidth + (i - index - 0.5f) * _unselectedTabWidth;  
 			}
-			targetX -= MainCanvas.referenceResolution.x / 2f;
+			targetX -= Canvas.referenceResolution.x / 2f;
 			Vector3 targetPos = new Vector3(targetX, _tabs[i].rectTransform.anchoredPosition.y, 0);
 
 			if(init) {
@@ -117,7 +135,7 @@ public class NavController : MonoBehaviour {
 				_tabs[i].SetTargetPosition(targetPos);
 			}
 			
-			targetPos = new Vector3((i - index) * MainCanvas.referenceResolution.x, _tabScreens[i].rectTransform.anchoredPosition.y, 0);
+			targetPos = new Vector3((i - index) * Canvas.referenceResolution.x, _tabScreens[i].rectTransform.anchoredPosition.y, 0);
 			if(init) {
 				_tabScreens[i].SetPosition(targetPos);
 			}
@@ -125,5 +143,74 @@ public class NavController : MonoBehaviour {
 				_tabScreens[i].SetTargetPosition(targetPos);
 			}
 		}
+	}
+
+
+	// ------------------------------------------------------------------------------- //
+	// ------------------------------------------------------------------------------- //
+	// Vertical Tier navigation
+
+	// Called from the NavDrag component on a GameObject
+	public void DragTier(Vector2 delta) {
+		float yElastic = 0;
+		if(_scrollContent.anchoredPosition.y > _tierMaxY) {
+			yElastic = delta.y * Mathf.Max(0f, Mathf.Min(1f, Mathf.Log10((_scrollContent.anchoredPosition.y - _tierMaxY) / 1f)));
+		}
+		if(_scrollContent.anchoredPosition.y < _tierMinY) {
+			Debug.Log("Content above Tier X");
+			yElastic = delta.y * _scrollContent.anchoredPosition.y / (_scrollContent.anchoredPosition.y + (_scrollContent.ScaledSize(1).y * ELASTICITY));
+		}
+
+		float targetY = _tierLerp.TargetPos.y + delta.y - yElastic;
+		_tierLerp.SetTargetPosition(new Vector3(_tierLerp.rectTransform.anchoredPosition.x, targetY, 0));
+	}
+
+	public void UpTier() {
+		SetTier(Mathf.Min(_selectedTierIndex + 1, _numTiers - 1));
+	}
+	public void DownTier() {
+		SetTier(Mathf.Max(_selectedTierIndex - 1, 0));
+	}
+	public void ResetTier() {
+		SetTier(_selectedTierIndex);
+	}
+
+	private void SetTier(int index, bool init = false) {
+		/*_selectedTabIndex = index;
+		for(int i = 0; i < _numTabs; i++ ) {
+			Vector2 targetSize = new Vector2(
+					(index == i)? _selectedTabWidth : _unselectedTabWidth,
+					(index == i)? _selectedTabHeight : _defaultTabHeight
+			);
+			float targetX;
+			if(i < index) {
+				targetX = (i + 0.5f) * _unselectedTabWidth;
+			}
+			else if(i == index) {
+				targetX = i * _unselectedTabWidth + 0.5f * _selectedTabWidth;
+			}
+			else {
+				targetX = index * _unselectedTabWidth + _selectedTabWidth + (i - index - 0.5f) * _unselectedTabWidth;  
+			}
+			targetX -= Canvas.referenceResolution.x / 2f;
+			Vector3 targetPos = new Vector3(targetX, _tabs[i].rectTransform.anchoredPosition.y, 0);
+
+			if(init) {
+				_tabs[i].SetSize(targetSize);
+				_tabs[i].SetPosition(targetPos);
+			}
+			else {
+				_tabs[i].SetTargetSize(targetSize);
+				_tabs[i].SetTargetPosition(targetPos);
+			}
+			
+			targetPos = new Vector3((i - index) * Canvas.referenceResolution.x, _tabScreens[i].rectTransform.anchoredPosition.y, 0);
+			if(init) {
+				_tabScreens[i].SetPosition(targetPos);
+			}
+			else {
+				_tabScreens[i].SetTargetPosition(targetPos);
+			}
+		}*/
 	}
 }
